@@ -18,6 +18,21 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Base64.h" />
+    <ClInclude Include="ClipboardHandler.h" />
+    <ClInclude Include="HttpClient.h" />
+    <ClInclude Include="PngEncoder.h" />
+    <ClInclude Include="State.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Base64.cpp" />
+    <ClCompile Include="ClipboardHandler.cpp" />
+    <ClCompile Include="HttpClient.cpp" />
+    <ClCompile Include="PngEncoder.cpp" />
+    <ClCompile Include="State.cpp" />
+    <ClCompile Include="windowsCopier.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -126,22 +141,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="windowsCopier.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="windowsCopier.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="windowsCopier.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="small.ico" />
-    <Image Include="windowsCopier.ico" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
