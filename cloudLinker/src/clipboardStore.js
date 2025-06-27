@@ -1,18 +1,19 @@
+//cloudLinker/src/clipboardStore.js
 let clipboard = {
     type: 'text' | 'image', // or 'image'
     data: ''
-  };
+};
   
-  function setClipboard(newClipboard) {
+function setClipboard(newClipboard) {
     clipboard = newClipboard;
-  }
+}
   
-  function getClipboard() {
+function getClipboard() {
     return clipboard;
-  }
+}
   
-  module.exports = {
+module.exports = {
     setClipboard,
     getClipboard
-  };
+};
   
