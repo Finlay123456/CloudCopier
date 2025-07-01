@@ -3,6 +3,7 @@
     "name": "ipadReceiver",
     "slug": "ipadReceiver",
     "version": "1.0.0",
+    "sdkversion":"53.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

@@ -16,6 +16,7 @@ router.post('/', (req, res) => {
   }
 
   setClipboard({ type, data });
+  req.broadcastClipboardUpdate({ type, data });
   res.status(204).send(); // No content
 });
 
