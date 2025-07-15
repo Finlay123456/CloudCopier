@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>  // for std::setw, std::setfill, std::hex
+#include "Config.h"
 #pragma comment(lib, "winhttp.lib")
 
 std::string jsonEscape(const std::string& input) {
@@ -38,7 +39,8 @@ void postClipboard(const std::string& payload) {
     HINTERNET hRequest = WinHttpOpenRequest(hConnect, L"POST", L"/clipboard", nullptr, WINHTTP_NO_REFERER,
         WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
 
-    std::wstring hdrs = L"Content-Type: application/json";
+        
+    std::wstring hdrs = L"Content-Type: application/json\r\n" API_KEY_HEADER;
     WinHttpSendRequest(hRequest, hdrs.c_str(), -1, (LPVOID)payload.c_str(), payload.size(), payload.size(), 0);
     WinHttpReceiveResponse(hRequest, nullptr);
 

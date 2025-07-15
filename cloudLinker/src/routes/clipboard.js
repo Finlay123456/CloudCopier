@@ -2,9 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const { setClipboard, getClipboard } = require('../clipboardStore');
+const { requireApiKey } = require('../middleware/auth');
 
 // POST /clipboard
-router.post('/', (req, res) => {
+router.post('/', requireApiKey, (req, res) => {
   const { type, data } = req.body;
 
   if (type !== 'text' && type !== 'image') {
@@ -21,7 +22,7 @@ router.post('/', (req, res) => {
 });
 
 // GET /clipboard
-router.get('/', (req, res) => {
+router.get('/', requireApiKey, (req, res) => {
   res.json(getClipboard());
 });
 
