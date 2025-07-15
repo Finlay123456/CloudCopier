@@ -18,6 +18,31 @@ const clients = new Set();
 
 wss.on('connection', ws => {
   clients.add(ws);
+  
+  ws.on('message', (message) => {
+    try {
+      const data = JSON.parse(message);
+      
+      if (data.type === 'setClipboard') {
+        const { formats, source } = data;
+        if (formats && typeof formats === 'object' && Object.keys(formats).length > 0) {
+          const { setClipboard } = require('./clipboardStore');
+          setClipboard({ formats, source: source || 'websocket' });
+          
+          // Broadcast to all other clients (except sender)
+          const msg = JSON.stringify({ type: 'clipboardUpdate', clipboard: { formats, source } });
+          for (const client of clients) {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+              client.send(msg);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error processing WebSocket message:', error);
+    }
+  });
+  
   ws.on('close', () => clients.delete(ws));
 });
 

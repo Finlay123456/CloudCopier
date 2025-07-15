@@ -6,6 +6,29 @@ const { requireApiKey } = require('../middleware/auth');
 
 // POST /clipboard
 router.post('/', requireApiKey, (req, res) => {
+  const { formats, source } = req.body;
+
+  if (!formats || typeof formats !== 'object') {
+    return res.status(400).json({ error: 'formats object is required' });
+  }
+
+  // Validate that we have at least one format
+  if (Object.keys(formats).length === 0) {
+    return res.status(400).json({ error: 'At least one clipboard format is required' });
+  }
+
+  const clipboardData = {
+    formats,
+    source: source || 'unknown'
+  };
+
+  setClipboard(clipboardData);
+  req.broadcastClipboardUpdate(clipboardData);
+  res.status(204).send(); // No content
+});
+
+// POST /clipboard/legacy (backward compatibility)
+router.post('/legacy', requireApiKey, (req, res) => {
   const { type, data } = req.body;
 
   if (type !== 'text' && type !== 'image') {
@@ -16,8 +39,16 @@ router.post('/', requireApiKey, (req, res) => {
     return res.status(400).json({ error: 'Clipboard data must be a string' });
   }
 
-  setClipboard({ type, data });
-  req.broadcastClipboardUpdate({ type, data });
+  const formats = {};
+  formats[type] = data;
+
+  const clipboardData = {
+    formats,
+    source: 'legacy'
+  };
+
+  setClipboard(clipboardData);
+  req.broadcastClipboardUpdate(clipboardData);
   res.status(204).send(); // No content
 });
 

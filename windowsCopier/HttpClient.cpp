@@ -60,3 +60,18 @@ void postClipboardImage(const std::string& base64Image) {
     oss << "{\"type\":\"image\",\"data\":\"" << base64Image << "\"}";
     postClipboard(oss.str());
 }
+
+void postClipboardFormats(const std::map<std::string, std::string>& formats, const std::string& source) {
+    std::ostringstream oss;
+    oss << "{\"formats\":{";
+    
+    bool first = true;
+    for (const auto& format : formats) {
+        if (!first) oss << ",";
+        first = false;
+        oss << "\"" << jsonEscape(format.first) << "\":\"" << jsonEscape(format.second) << "\"";
+    }
+    
+    oss << "},\"source\":\"" << jsonEscape(source) << "\"}";
+    postClipboard(oss.str());
+}
