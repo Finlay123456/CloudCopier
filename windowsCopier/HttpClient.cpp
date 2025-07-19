@@ -2,6 +2,7 @@
 #include <winhttp.h>
 #include <string>
 #include <sstream>
+#include <map>
 #include <iomanip>  // for std::setw, std::setfill, std::hex
 #include "Config.h"
 #pragma comment(lib, "winhttp.lib")

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="Base64.h" />
     <ClInclude Include="ClipboardHandler.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="HttpClient.h" />
     <ClInclude Include="PngEncoder.h" />
     <ClInclude Include="State.h" />
