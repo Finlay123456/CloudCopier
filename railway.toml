@@ -1,13 +1,9 @@
 [build]
 builder = "nixpacks"
-watchPatterns = ["server/**"]
 
 [deploy]
-startCommand = "cd server && npm start"
+startCommand = "npm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
-
-[nixpacks]
-configFile = "server/package.json"

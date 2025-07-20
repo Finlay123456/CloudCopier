@@ -1,0 +1,12 @@
+{
+  "name": "clipboard-server-root",
+  "version": "1.0.0",
+  "description": "Clipboard server deployment wrapper",
+  "scripts": {
+    "start": "cd server && npm start",
+    "install": "cd server && npm install"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
