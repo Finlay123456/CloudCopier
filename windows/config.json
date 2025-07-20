@@ -1,0 +1,5 @@
+{
+  "serverUrl": "http://localhost:3000",
+  "apiKey": "dc85c5606119223f78fba46cb2e422af22577709f6d9dbf48ac7afcd92f67c7d",
+  "pollingIntervalMs": 2000
+}
