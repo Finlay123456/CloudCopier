@@ -1,5 +1,5 @@
 {
-  "serverUrl": "http://localhost:3000",
-  "apiKey": "c3e01145f698e18d25cefb323eea74d895e0528f7c7fb3404eed27b18abfbcc6",
+  "serverUrl": "https://cloudcopier-production.up.railway.app",
+  "apiKey": "8cb07424f69dedd873e86687dc09e315d686d6d0f0b4f8a1f3ae1ac4d5f8e65a",
   "pollingIntervalMs": 2000
 }

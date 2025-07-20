@@ -1,8 +1,8 @@
 import Foundation
 
 struct AppConfig {
-    static let serverUrl = "http://10.0.0.119:3000"  // Your laptop's WiFi IP address
-    static let apiKey = "dc85c5606119223f78fba46cb2e422af22577709f6d9dbf48ac7afcd92f67c7d"  // Same as Windows app
+    static let serverUrl = "https://cloudcopier-production.up.railway.app"  // Cloud hosted server
+    static let apiKey = "c3e01145f698e18d25cefb323eea74d895e0528f7c7fb3404eed27b18abfbcc6"  // Same as Windows app
     static let pollingInterval: TimeInterval = 2.0  // 2 seconds
 }
 

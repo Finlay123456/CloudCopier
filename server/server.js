@@ -48,5 +48,5 @@ app.get('/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Clipboard server running on port ${PORT}`);
-  console.log(`API Key: ${process.env.API_KEY}`);
+  console.log(`API Key configured: ${process.env.API_KEY ? 'Yes' : 'No'}`);
 });

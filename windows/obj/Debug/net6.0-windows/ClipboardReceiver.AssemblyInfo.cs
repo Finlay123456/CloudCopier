@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ClipboardReceiver")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f7c7b755dd6489f79cd0215908a88f63a0da542c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd5752f14923c3c119aef7ca23a2e55389a7a5b9")]
 [assembly: System.Reflection.AssemblyProductAttribute("ClipboardReceiver")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ClipboardReceiver")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
