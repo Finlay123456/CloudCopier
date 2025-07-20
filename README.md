@@ -1,138 +1,111 @@
-# 📋 Clipboard Sync System
+# CloudCopier
 
-This is a **cross-device clipboard synchronization system** that syncs clipboard content from a Windows computer to an iPad.
-It consists of three main parts:
+Cross-device clipboard sync between Windows and iOS. Copy on one device, paste on another.
 
-* 🖥️ A Windows app that watches the clipboard (written in C++)
-* 🌐 A middleware server that relays clipboard content
-* 📱 An iPad app built with Expo + React Native
+## How it works
 
-Clipboard text copied on the Windows machine is instantly pushed to the cloud-based middleware server. The iPad app can then retrieve it and set it into iOS's clipboard.
+Three components:
+- **Windows app** (C# WinForms) - monitors clipboard changes, syncs with server
+- **Node.js server** - stores clipboard data, handles API requests  
+- **iOS app** (Swift/SwiftUI) - monitors clipboard changes, syncs with server
 
----
+Both apps detect local clipboard changes and upload to server. Both apps poll server and update local clipboard when remote changes are detected.
 
-## 🔁 Data Flow Overview
+## Features
 
-```
-[Windows Clipboard Watcher (C++)]
-        |
-        | POST /clipboard { clipboard: "..." }
-        V
-[MIDDLEWARE SERVER (Node.js/Express)]
-        |
-        | GET /clipboard
-        V
-[iPad App (Expo)]
-        |
-        | (on tap)
-        | Clipboard.setStringAsync()
-        V
-[iOS System Clipboard]
-```
+- Syncs text and images
+- API key authentication
+- Works offline (queues changes)
+- Native apps, no web wrappers
+- Self-hostable
 
----
+## Setup
 
-## 🌐 Architecture Overview
+### Server
 
-### 📁 Repository Structure
-
-```
-clipboard-sync/
-├── middleware-server/        # Node.js server
-│   ├── server.js
-│   ├── clipboardStore.js
-│   └── package.json
-│
-├── windows-client/           # Windows clipboard watcher (C++)
-│   └── ClipboardWatcher.cpp
-│
-├── ipad-app/                 # iPad app (Expo + React Native)
-│   ├── App.tsx
-│   └── screens/ClipboardScreen.tsx
-│
-└── README.md
-```
-
----
-
-## 🌍 API Design
-
-### POST `/clipboard`
-
-* **Request Body:** `{ clipboard: "copied text here" }`
-* **Action:** Updates the stored clipboard value.
-
-### GET `/clipboard`
-
-* **Response:** `{ clipboard: "most recent copied text" }`
-* **Use:** Called by iPad app to display or copy clipboard text.
-
----
-
-## 🧭 Components
-
-### 1. 🖥️ Windows Clipboard Watcher (C++)
-
-* Listens for `WM_CLIPBOARDUPDATE` via WinAPI
-* On clipboard change, reads text content
-* Sends a `POST /clipboard` request to the cloud middleware server
-
-### 2. 🌐 Middleware Server (Node.js/Express)
-
-* Deployed to a cloud provider (AWS EC2)
-* Accepts clipboard updates via POST
-* Serves latest clipboard via GET
-* Optional enhancements: Redis caching, auth, file/image support
-
-### 3. 📱 iPad App (Expo + React Native)
-
-* Polls server (or uses pull-to-refresh)
-* Displays clipboard content
-* On user tap, uses `expo-clipboard` to copy content to iOS clipboard
-
----
-
-## 🔧 Setup & Run
-
-### Middleware Server
-
-```
-cd middleware-server
+```bash
+cd server
 npm install
 npm start
-```
-
-Default server runs on:
-
-```
-http://localhost:3000
+# or with Docker
+docker build -t cloudcopier .
+docker run -p 3000:3000 -e API_KEY=your-secret-key cloudcopier
 ```
 
 ### Windows Client
 
-* Build with a C++ compiler on Windows
-* Ensure it is configured to run on startup and knows the server URL
-
-### iPad App (Expo)
-
-```
-cd ipad-app
-npx expo start
+```bash
+cd windows
+dotnet build
+dotnet run
 ```
 
----
+Configure server URL in `config.json`.
 
-## ✅ To Do (Next Iterations)
+### iOS App
 
-* [ ] Add Redis support for clipboard persistence
-* [ ] Add support for image clipboard content
-* [ ] Add WebSocket push updates
-* [ ] Add authentication support
-* [ ] Auto-expire clipboard entries
-* [ ] Add cloud deployment instructions
+Open `ios/ClipboardSync.xcodeproj` in Xcode. Update server URL in `Config.swift`, then build and run on device.
 
----
+## API
 
-## ✏️ Author
+### Authentication
+Include `X-API-Key` header in all requests.
 
-Finlay Cooper – 2025
+### POST /clipboard
+```json
+{
+  "formats": {
+    "text": "content here",
+    "image": "base64-data"
+  },
+  "source": "windows"
+}
+```
+
+### GET /clipboard
+Returns latest clipboard data with timestamp and format info.
+
+### GET /health
+Server health check.
+
+## Configuration
+
+### Server Environment Variables
+- `PORT` - Server port (default: 3000)
+- `API_KEY` - Authentication key (required)
+
+### Client Configuration
+
+**iOS** (`ios/ClipboardSync/Config.swift`):
+```swift
+struct AppConfig {
+    static let serverUrl = "https://your-server.com"
+    static let apiKey = "your-api-key"
+    static let pollingInterval: TimeInterval = 2.0
+}
+```
+
+**Windows** (`windows/config.json`):
+```json
+{
+  "serverUrl": "https://your-server.com",
+  "apiKey": "your-api-key",
+  "pollingInterval": 2000
+}
+```
+
+## Deployment
+
+Works on Railway, Heroku, AWS, or anywhere that runs Node.js. The included Dockerfile makes container deployment straightforward.
+
+## TODO
+
+- WebSocket support for real-time sync
+- File/image support improvements  
+- Android client
+- Clipboard history
+- End-to-end encryption
+
+## License
+
+MIT
