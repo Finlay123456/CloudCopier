@@ -2,11 +2,14 @@
   "name": "clipboard-server-root",
   "version": "1.0.0",
   "description": "Clipboard server deployment wrapper",
+  "main": "server/server.js",
   "scripts": {
-    "start": "cd server && npm start",
-    "install": "cd server && npm install"
+    "start": "cd server && node server.js",
+    "postinstall": "cd server && npm install"
   },
   "engines": {
-    "node": ">=16.0.0"
-  }
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {}
 }
