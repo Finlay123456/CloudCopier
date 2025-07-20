@@ -11,3 +11,7 @@ Thumbs.db
 # IDE files
 .vscode/
 .idea/
+
+# Config files with secrets
+windows/config.json
+server/.env
