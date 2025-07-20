@@ -1,9 +1,9 @@
 import Foundation
 
 struct AppConfig {
-    static let serverUrl = "https://cloudcopier-production.up.railway.app"  // Cloud hosted server
-    static let apiKey = "c3e01145f698e18d25cefb323eea74d895e0528f7c7fb3404eed27b18abfbcc6"  // Same as Windows app
-    static let pollingInterval: TimeInterval = 2.0  // 2 seconds
+    static let serverUrl = Environment.serverUrl
+    static let apiKey = Environment.apiKey
+    static let pollingInterval = Environment.pollingInterval
 }
 
 struct ClipboardData: Codable {

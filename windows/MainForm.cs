@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Configuration;
 
 namespace ClipboardReceiver
 {
@@ -57,15 +58,13 @@ namespace ClipboardReceiver
         {
             try
             {
-                if (File.Exists("config.json"))
+                // Load from app.config
+                serverUrl = ConfigurationManager.AppSettings["ServerUrl"] ?? serverUrl;
+                apiKey = ConfigurationManager.AppSettings["ApiKey"] ?? apiKey;
+                
+                if (string.IsNullOrEmpty(apiKey) || apiKey == "your-api-key-here")
                 {
-                    var configJson = File.ReadAllText("config.json");
-                    var config = JsonConvert.DeserializeObject<Config>(configJson);
-                    if (config != null)
-                    {
-                        serverUrl = config.ServerUrl ?? serverUrl;
-                        apiKey = config.ApiKey ?? apiKey;
-                    }
+                    MessageBox.Show("API key not configured in app.config", "Configuration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

@@ -13,5 +13,6 @@ Thumbs.db
 .idea/
 
 # Config files with secrets
-windows/config.json
+windows/app.config
 server/.env
+ios/ClipboardSync/Environment.plist
