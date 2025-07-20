@@ -1,0 +1,7 @@
+windows/
+ios/
+*.md
+.git/
+.github/
+.vscode/
+.idea/
