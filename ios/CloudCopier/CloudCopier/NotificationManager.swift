@@ -1,7 +1,15 @@
+//
+//  NotificationManager.swift
+//  CloudCopier
+//
+//  Created by Finlay Cooper on 2025-07-27.
+//
 import Foundation
 import UserNotifications
-import UIKit
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     @Published var showingCopyAlert = false
@@ -18,17 +26,25 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error = error {
                 print("Notification permission error: \(error)")
+            } else if granted {
+                print("Notification permission granted")
+            } else {
+                print("Notification permission denied - app will work without notifications")
             }
         }
     }
     
     func showClipboardNotification(with formats: [String: Any]) async {
-        // For iOS, we'll show an in-app alert instead of a system notification
-        // because system notifications can't have interactive content preview
+        #if canImport(UIKit)
+        // iOS/iPadOS: Show notification for user interaction
         await MainActor.run {
             self.pendingClipboardData = formats
             self.showingCopyAlert = true
         }
+        #else
+        // macOS: Auto-copy to clipboard immediately (no notification needed)
+        await clipboardManager?.setLocalClipboard(from: formats)
+        #endif
     }
     
     func copyPendingContent() async {
@@ -72,6 +88,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
                 content: AnyView(
                     ScrollView {
                         Text(text)
+                            .foregroundColor(.black)
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(Color.gray.opacity(0.1))
@@ -103,7 +120,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
                 content: AnyView(
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 4) {
-                            ForEach(files.indices, id: \.self) { index in
+                            ForEach(files.indices, id: \.self) { [self] index in
                                 if let fileName = files[index]["name"] as? String,
                                    let fileSize = files[index]["size"] as? Int64 {
                                     HStack {
@@ -112,10 +129,11 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
                                         VStack(alignment: .leading) {
                                             Text(fileName)
                                                 .font(.caption)
+                                                .foregroundColor(.black)
                                                 .lineLimit(1)
                                             Text(formatFileSize(fileSize))
                                                 .font(.caption2)
-                                                .foregroundColor(.secondary)
+                                                .foregroundColor(.gray)
                                         }
                                         Spacer()
                                     }
@@ -192,7 +210,7 @@ struct ClipboardAlert: View {
                     HStack {
                         Text("📥 Clipboard Content Received")
                             .font(.headline)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.black)
                         Spacer()
                     }
                     
@@ -200,6 +218,7 @@ struct ClipboardAlert: View {
                         Text(content.title)
                             .font(.subheadline)
                             .fontWeight(.medium)
+                            .foregroundColor(.black)
                         
                         content.content
                     }
@@ -227,7 +246,7 @@ struct ClipboardAlert: View {
                     }
                 }
                 .padding(20)
-                .background(Color(.systemBackground))
+                .background(Color.white)
                 .cornerRadius(16)
                 .padding(.horizontal, 20)
                 .shadow(radius: 10)

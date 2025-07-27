@@ -1,3 +1,9 @@
+//
+//  ClipboardSyncApp.swift
+//  CloudCopier
+//
+//  Created by Finlay Cooper on 2025-07-27.
+//
 import SwiftUI
 import UserNotifications
 
@@ -27,6 +33,7 @@ struct ClipboardSyncApp: App {
         clipboardManager.serverManager = serverManager
         serverManager.clipboardManager = clipboardManager
         serverManager.notificationManager = notificationManager
+        notificationManager.clipboardManager = clipboardManager
         
         // Start polling
         serverManager.startPolling()

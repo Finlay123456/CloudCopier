@@ -1,3 +1,10 @@
+//
+//  Config.swift
+//  CloudCopier
+//
+//  Created by Finlay Cooper on 2025-07-27.
+//
+
 import Foundation
 
 struct AppConfig {

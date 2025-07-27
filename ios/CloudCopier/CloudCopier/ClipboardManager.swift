@@ -1,10 +1,21 @@
+//
+//  ClipboardManager.swift
+//  CloudCopier
+//
+//  Created by Finlay Cooper on 2025-07-27.
+//
+
 import Foundation
-import UIKit
 import UniformTypeIdentifiers
-import MobileCoreServices
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 class ClipboardManager: ObservableObject {
     @Published var lastReceivedContent: String = ""
+    private var lastReceivedFiles: [String] = [] // Track file names to prevent infinite loop
     @Published var statusMessage: String = "Ready to sync clipboard...\nCopy something to test!"
     @Published var isMonitoring: Bool = true
     
@@ -13,7 +24,11 @@ class ClipboardManager: ObservableObject {
     private var lastChangeCount: Int = 0
     
     init() {
+        #if canImport(UIKit)
         lastChangeCount = UIPasteboard.general.changeCount
+        #else
+        lastChangeCount = NSPasteboard.general.changeCount
+        #endif
     }
     
     func startMonitoring() {
@@ -32,14 +47,20 @@ class ClipboardManager: ObservableObject {
     private func checkClipboardChanges() {
         guard isMonitoring else { return }
         
+        #if canImport(UIKit)
         let currentChangeCount = UIPasteboard.general.changeCount
+        #else
+        let currentChangeCount = NSPasteboard.general.changeCount
+        #endif
         if currentChangeCount != lastChangeCount {
             lastChangeCount = currentChangeCount
             DispatchQueue.main.async {
                 self.statusMessage = "Clipboard changed detected..."
             }
             
+            // Add a small delay to avoid processing clipboard changes too quickly after setting
             Task {
+                try? await Task.sleep(nanoseconds: 200_000_000) // 200ms delay
                 await self.handleClipboardChange()
             }
         }
@@ -67,6 +88,7 @@ class ClipboardManager: ObservableObject {
     private func captureClipboardData() async -> [String: Any]? {
         return await withCheckedContinuation { continuation in
             DispatchQueue.main.async {
+                #if canImport(UIKit)
                 var formats: [String: Any] = [:]
                 let pasteboard = UIPasteboard.general
                 
@@ -121,6 +143,78 @@ class ClipboardManager: ObservableObject {
                     }
                     continuation.resume(returning: nil)
                 }
+                #else
+                // macOS clipboard support
+                var formats: [String: Any] = [:]
+                let pasteboard = NSPasteboard.general
+                
+                // Check for text
+                if let text = pasteboard.string(forType: .string) {
+                    print("DEBUG: Clipboard text: '\(String(text.prefix(50)))...'")
+                    print("DEBUG: lastReceivedContent: '\(String(self.lastReceivedContent.prefix(50)))...'")
+                    // Don't send if this is the same content we just received from server
+                    if text == self.lastReceivedContent {
+                        print("DEBUG: SKIPPING - content matches lastReceivedContent")
+                        DispatchQueue.main.async {
+                            self.statusMessage = "Skipping - same as received content: '\(String(text.prefix(30)))...'"
+                        }
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    
+                    print("DEBUG: SENDING - content is different")
+                    formats["text"] = text
+                    DispatchQueue.main.async {
+                        self.statusMessage = "Found text: \(String(text.prefix(50)))..."
+                    }
+                }
+                
+                // Check for images
+                if let imageData = pasteboard.data(forType: .png) ?? pasteboard.data(forType: .tiff) {
+                    let base64String = imageData.base64EncodedString()
+                    formats["image"] = "data:image/png;base64,\(base64String)"
+                    DispatchQueue.main.async {
+                        self.statusMessage = "Found image data"
+                    }
+                }
+                
+                // Check for file URLs
+                if let urls = pasteboard.readObjects(forClasses: [NSURL.self]) as? [URL] {
+                    let fileNames = urls.map { $0.lastPathComponent }.sorted()
+                    
+                    // Don't send if these are the same files we just received from server
+                    if fileNames == self.lastReceivedFiles {
+                        print("DEBUG: SKIPPING FILES - same as received: \(fileNames)")
+                        DispatchQueue.main.async {
+                            self.statusMessage = "Skipping - same files as received: \(fileNames.joined(separator: ", "))"
+                        }
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    
+                    let fileData = self.processFileURLs(urls)
+                    if !fileData.isEmpty {
+                        print("DEBUG: SENDING FILES - different from received: \(fileNames)")
+                        formats["files"] = fileData
+                        DispatchQueue.main.async {
+                            self.statusMessage = "Found \(fileData.count) files/folders"
+                        }
+                    }
+                }
+                
+                if !formats.isEmpty {
+                    let result = [
+                        "formats": formats,
+                        "source": "macos"
+                    ]
+                    continuation.resume(returning: result)
+                } else {
+                    DispatchQueue.main.async {
+                        self.statusMessage = "No supported clipboard formats found"
+                    }
+                    continuation.resume(returning: nil)
+                }
+                #endif
             }
         }
     }
@@ -215,13 +309,12 @@ class ClipboardManager: ObservableObject {
     
     @MainActor
     func setLocalClipboard(from formats: [String: Any]) async {
+        #if canImport(UIKit)
         let pasteboard = UIPasteboard.general
         
-        // Priority: text, then image, then files
-        if let text = formats["text"] as? String {
-            lastReceivedContent = text
-            pasteboard.string = text
-            statusMessage = "📥 Set clipboard text: \(String(text.prefix(50)))..."
+        // Priority: files, then images, then text (files are more specific than text paths)
+        if let filesArray = formats["files"] as? [[String: Any]] {
+            await handleReceivedFiles(filesArray)
         } else if let imageString = formats["image"] as? String,
                   imageString.hasPrefix("data:image") {
             if let base64String = imageString.components(separatedBy: ",").last,
@@ -230,9 +323,35 @@ class ClipboardManager: ObservableObject {
                 pasteboard.image = image
                 statusMessage = "📥 Set clipboard image"
             }
-        } else if let filesArray = formats["files"] as? [[String: Any]] {
-            await handleReceivedFiles(filesArray)
+        } else if let text = formats["text"] as? String {
+            lastReceivedContent = text
+            pasteboard.string = text
+            statusMessage = "📥 Set clipboard text: \(String(text.prefix(50)))..."
         }
+        #else
+        // macOS clipboard support
+        let pasteboard = NSPasteboard.general
+        
+        // Priority: files, then images, then text (files are more specific than text paths)
+        if let filesArray = formats["files"] as? [[String: Any]] {
+            await handleReceivedFiles(filesArray)
+        } else if let imageString = formats["image"] as? String,
+                  imageString.hasPrefix("data:image") {
+            if let base64String = imageString.components(separatedBy: ",").last,
+               let imageData = Data(base64Encoded: base64String),
+               let image = NSImage(data: imageData) {
+                pasteboard.clearContents()
+                pasteboard.writeObjects([image])
+                statusMessage = "📥 Set clipboard image"
+            }
+        } else if let text = formats["text"] as? String {
+            lastReceivedContent = text
+            print("DEBUG: Setting lastReceivedContent to: '\(String(text.prefix(50)))...'")
+            pasteboard.clearContents()
+            pasteboard.setString(text, forType: .string)
+            statusMessage = "📥 Set clipboard text: \(String(text.prefix(50)))..."
+        }
+        #endif
     }
     
     @MainActor
@@ -268,7 +387,18 @@ class ClipboardManager: ObservableObject {
             }
             
             if !fileUrls.isEmpty {
+                // Track the received file names to prevent infinite loop
+                lastReceivedFiles = fileUrls.map { $0.lastPathComponent }.sorted()
+                print("DEBUG: Setting lastReceivedFiles to: \(lastReceivedFiles)")
+                
+                #if canImport(UIKit)
                 UIPasteboard.general.urls = fileUrls
+                #else
+                // macOS file URLs support
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                pasteboard.writeObjects(fileUrls as [NSURL])
+                #endif
                 statusMessage = "📥 Set clipboard files: \(decodedFiles.joined(separator: ", "))"
             } else {
                 statusMessage = "No valid files to decode"
@@ -285,5 +415,10 @@ class ClipboardManager: ObservableObject {
         } else {
             stopMonitoring()
         }
+    }
+    
+    func clearLastReceivedFiles() {
+        lastReceivedFiles = []
+        print("DEBUG: Cleared lastReceivedFiles")
     }
 }

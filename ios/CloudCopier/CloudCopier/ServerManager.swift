@@ -1,5 +1,11 @@
+//
+//  ServerManager.swift
+//  CloudCopier
+//
+//  Created by Finlay Cooper on 2025-07-27.
+//
+
 import Foundation
-import UIKit
 
 class ServerManager: ObservableObject {
     @Published var isPolling: Bool = false
@@ -18,8 +24,9 @@ class ServerManager: ObservableObject {
         connectionStatus = "Connecting..."
         
         pollingTimer = Timer.scheduledTimer(withTimeInterval: AppConfig.pollingInterval, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
             Task {
-                await self?.pollClipboard()
+                await self.pollClipboard()
             }
         }
         
@@ -60,7 +67,7 @@ class ServerManager: ObservableObject {
                 let clipboardData = try JSONDecoder().decode(ClipboardData.self, from: data)
                 
                 // Only process if this is newer data and not from our own app
-                if clipboardData.timestamp > lastProcessedTimestamp && clipboardData.source != "ios" {
+                if clipboardData.timestamp > lastProcessedTimestamp && clipboardData.source != "macos" {
                     lastProcessedTimestamp = clipboardData.timestamp
                     
                     let formats = clipboardData.formats.mapValues { $0.value }
@@ -129,5 +136,6 @@ class ServerManager: ObservableObject {
     @MainActor
     private func clearLastReceivedContent() {
         clipboardManager?.lastReceivedContent = ""
+        clipboardManager?.clearLastReceivedFiles()
     }
 }
