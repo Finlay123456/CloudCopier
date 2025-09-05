@@ -16,3 +16,14 @@ C:\Users\finla\Projects\CloudCopier\windows\obj\Debug\net6.0-windows\refint\Clip
 C:\Users\finla\Projects\CloudCopier\windows\obj\Debug\net6.0-windows\ClipboardReceiver.pdb
 C:\Users\finla\Projects\CloudCopier\windows\obj\Debug\net6.0-windows\ClipboardReceiver.genruntimeconfig.cache
 C:\Users\finla\Projects\CloudCopier\windows\obj\Debug\net6.0-windows\ref\ClipboardReceiver.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\ClipboardReceiver.dll.config
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\Microsoft.Win32.SystemEvents.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\System.Configuration.ConfigurationManager.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\System.Drawing.Common.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\System.Security.Cryptography.ProtectedData.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\System.Security.Permissions.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\System.Windows.Extensions.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\runtimes\win\lib\net6.0\System.Drawing.Common.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\finla\Projects\CloudCopier\windows\bin\Debug\net6.0-windows\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
