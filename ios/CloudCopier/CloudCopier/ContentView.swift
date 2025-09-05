@@ -1,4 +1,14 @@
+//
+//  ContentView.swift
+//  CloudCopier
+//
+//  Created by Finlay Cooper on 2025-07-27.
+//
+
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct ContentView: View {
     @EnvironmentObject var clipboardManager: ClipboardManager
@@ -18,7 +28,7 @@ struct ContentView: View {
                                 .foregroundColor(.primary)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(Color(.systemBackground))
+                                .background(Color.white)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 6)
                                         .stroke(Color.gray, lineWidth: 1)
@@ -59,9 +69,10 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Text(clipboardManager.statusMessage)
                             .font(.body)
+                            .foregroundColor(.black)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
-                            .background(Color(.systemBackground))
+                            .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
@@ -107,7 +118,7 @@ struct ContentView: View {
                     }
                     .padding()
                 }
-                .background(Color(.systemGroupedBackground))
+                .background(Color.gray.opacity(0.1))
             }
         }
         .navigationTitle("Clipboard Sync")
@@ -128,9 +139,11 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
-        .environmentObject(ClipboardManager())
-        .environmentObject(ServerManager())
-        .environmentObject(NotificationManager())
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .environmentObject(ClipboardManager())
+            .environmentObject(ServerManager())
+            .environmentObject(NotificationManager())
+    }
 }
