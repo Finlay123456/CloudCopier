@@ -12,6 +12,15 @@ Thumbs.db
 .vscode/
 .idea/
 
+# .NET Core build outputs
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.vspx
+*.vspscc
+
 # Config files with secrets
 windows/app.config
 server/.env

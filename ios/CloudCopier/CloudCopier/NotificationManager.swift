@@ -20,6 +20,30 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     override init() {
         super.init()
         UNUserNotificationCenter.current().delegate = self
+        setupNotificationCategories()
+    }
+    
+    private func setupNotificationCategories() {
+        let copyAction = UNNotificationAction(
+            identifier: "COPY_ACTION",
+            title: "Copy",
+            options: []
+        )
+        
+        let dismissAction = UNNotificationAction(
+            identifier: "DISMISS_ACTION",
+            title: "Dismiss",
+            options: []
+        )
+        
+        let category = UNNotificationCategory(
+            identifier: "CLIPBOARD_CATEGORY",
+            actions: [copyAction, dismissAction],
+            intentIdentifiers: [],
+            options: []
+        )
+        
+        UNUserNotificationCenter.current().setNotificationCategories([category])
     }
     
     func requestPermission() {
@@ -36,10 +60,29 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     
     func showClipboardNotification(with formats: [String: Any]) async {
         #if canImport(UIKit)
-        // iOS/iPadOS: Show notification for user interaction
-        await MainActor.run {
-            self.pendingClipboardData = formats
-            self.showingCopyAlert = true
+        // iOS/iPadOS: Send native notification
+        let content = UNMutableNotificationContent()
+        content.title = "📥 Clipboard Content Received"
+        content.body = getPreviewText(from: formats)
+        content.sound = .default
+        content.categoryIdentifier = "CLIPBOARD_CATEGORY"
+        content.userInfo = formats
+        
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil
+        )
+        
+        do {
+            try await UNUserNotificationCenter.current().add(request)
+        } catch {
+            print("Error sending notification: \(error)")
+            // Fallback to in-app alert if notification fails
+            await MainActor.run {
+                self.pendingClipboardData = formats
+                self.showingCopyAlert = true
+            }
         }
         #else
         // macOS: Auto-copy to clipboard immediately (no notification needed)
@@ -189,6 +232,31 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         } else {
             return String(format: "%.1f MB", Double(bytes) / (1024 * 1024))
         }
+    }
+    
+    // MARK: - UNUserNotificationCenterDelegate
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+        
+        switch response.actionIdentifier {
+        case "COPY_ACTION":
+            Task {
+                await clipboardManager?.setLocalClipboard(from: userInfo)
+            }
+        case "DISMISS_ACTION", UNNotificationDefaultActionIdentifier:
+            // Just dismiss the notification
+            break
+        default:
+            break
+        }
+        
+        completionHandler()
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // Show notification even when app is in foreground
+        completionHandler([.alert, .sound, .badge])
     }
 }
 
